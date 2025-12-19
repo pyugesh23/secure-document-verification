@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+        }
+        .container {
+            width: 90%;
+            margin: 30px auto;
+        }
+        h2 {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #ecf0f1;
+        }
+        .back {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>👤 Users</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Active</th>
+            <th>Last Login</th>
+        </tr>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.role }}</td>
+            <td>{{ u.active }}</td>
+            <td>{{ u.last_login }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>📄 Issued Documents</h2>
+    <table>
+        <tr>
+            <th>Doc ID</th>
+            <th>Student</th>
+            <th>Issuer</th>
+            <th>Issued At</th>
+        </tr>
+        {% for d in documents %}
+        <tr>
+            <td>{{ d.doc_id }}</td>
+            <td>{{ d.student_name }}</td>
+            <td>{{ d.issuer_id }}</td>
+            <td>{{ d.issued_at }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>📜 Audit Logs (Recent)</h2>
+    <table>
+        <tr>
+            <th>User ID</th>
+            <th>Action</th>
+            <th>Document</th>
+            <th>Result</th>
+            <th>Time</th>
+        </tr>
+        {% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Admin Panel</h2>
+
+    <h3>Issued Documents</h3>
+    <table border="1" width="100%">
+        <tr>
+            <th>Doc ID</th>
+            <th>Student</th>
+            <th>Issuer</th>
+        </tr>
+        {% for d in documents %}
+        <tr>
+            <td>{{ d.doc_id }}</td>
+            <td>{{ d.student_name }}</td>
+            <td>{{ d.issuer.username }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
+
+    </table>
+
+    <a href="{{ url_for('auth.dashboard') }}" class="back">
+        ⬅ Back to Dashboard
+    </a>
+
+</div>
+
+</body>
+</html>

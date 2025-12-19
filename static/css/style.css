@@ -1,0 +1,80 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+}
+
+/* HEADER */
+header {
+    background: #1e293b;
+    color: white;
+    padding: 15px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+nav {
+    margin-top: 10px;
+}
+
+nav a {
+    color: white;
+    margin-right: 15px;
+    text-decoration: none;
+}
+
+/* MAIN */
+main {
+    padding: 30px;
+}
+
+/* CARD */
+.card {
+    background: white;
+    padding: 25px;
+    max-width: 500px;
+    margin: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* INPUTS */
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+}
+
+button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+/* ALERTS */
+.alert {
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.alert.success { background: #dcfce7; }
+.alert.danger { background: #fee2e2; }
+
+/* RESULT */
+.result.valid { color: green; }
+.result.fake { color: red; }
+.result.unknown { color: orange; }
+
+/* FOOTER */
+footer {
+    text-align: center;
+    padding: 10px;
+    background: #e5e7eb;
+}

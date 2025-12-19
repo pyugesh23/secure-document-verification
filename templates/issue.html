@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Issue Document</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="text" name="student_name" placeholder="Student Name" required>
+        <input type="file" name="document" required>
+        <button type="submit">Generate QR & Issue</button>
+    </form>
+</div>
+
+{% endblock %}

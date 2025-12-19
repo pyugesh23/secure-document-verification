@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Verify Document</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="document" required>
+        <button type="submit">Verify</button>
+    </form>
+
+    {% if result %}
+    <div class="result {{ result|lower }}">
+        <h3>Status: {{ result }}</h3>
+        <p>{{ message }}</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

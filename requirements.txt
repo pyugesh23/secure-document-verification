@@ -1,0 +1,10 @@
+Flask>=2.2
+Flask-Login>=0.6
+Flask-SQLAlchemy>=3.0
+Werkzeug>=2.2
+
+Pillow>=9.0
+qrcode[pil]>=7.3
+opencv-python>=4.8
+imagehash>=4.3
+PyMuPDF>=1.23

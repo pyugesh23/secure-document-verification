@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audit Logs</title>
+</head>
+<body>
+    <h2>Audit Logs</h2>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>User ID</th>
+            <th>Action</th>
+            <th>Document ID</th>
+            <th>Result</th>
+            <th>Details</th>
+            <th>Time</th>
+        </tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.user_id }}</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.doc_id }}</td>
+            <td>{{ log.result }}</td>
+            <td>{{ log.details }}</td>
+            <td>{{ log.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="{{ url_for('auth.dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
