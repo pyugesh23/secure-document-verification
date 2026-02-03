@@ -23,6 +23,9 @@ from utils import (
     hamming_distance
 )
 
+# =====================================================
+# CONFIG
+# =====================================================
 auth_bp = Blueprint("auth", __name__)
 
 ALLOWED_EXTENSIONS = {"pdf", "png", "jpg", "jpeg"}
@@ -33,9 +36,9 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# -------------------------------------------------
+# =====================================================
 # LOGIN
-# -------------------------------------------------
+# =====================================================
 @auth_bp.route("/", methods=["GET", "POST"])
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
@@ -59,18 +62,18 @@ def login():
     return render_template("login.html")
 
 
-# -------------------------------------------------
+# =====================================================
 # DASHBOARD
-# -------------------------------------------------
+# =====================================================
 @auth_bp.route("/dashboard")
 @login_required
 def dashboard():
     return render_template("dashboard.html", user=current_user)
 
 
-# -------------------------------------------------
+# =====================================================
 # LOGOUT
-# -------------------------------------------------
+# =====================================================
 @auth_bp.route("/logout")
 @login_required
 def logout():
@@ -78,9 +81,9 @@ def logout():
     return redirect(url_for("auth.login"))
 
 
-# -------------------------------------------------
+# =====================================================
 # ISSUE DOCUMENT (ADMIN / ISSUER)
-# -------------------------------------------------
+# =====================================================
 @auth_bp.route("/issue", methods=["GET", "POST"])
 @login_required
 def issue_document():
@@ -94,7 +97,7 @@ def issue_document():
         student_name = request.form.get("student_name")
 
         if not file or not allowed_file(file.filename):
-            flash("Invalid file", "danger")
+            flash("Invalid file type", "danger")
             return redirect(url_for("auth.issue_document"))
 
         filename = secure_filename(file.filename)
@@ -107,10 +110,13 @@ def issue_document():
         original_path = os.path.join(originals_dir, filename)
         file.save(original_path)
 
+        # Unique document ID
         doc_id = f"DOC{int(datetime.utcnow().timestamp())}"
 
-        # ---- Stamp QR (DOC ID only) ----
-        qr_img = generate_qr(f"DOC:{doc_id}")
+        # QR contains ONLY doc_id (important!)
+        qr_payload = f"DOC:{doc_id}"
+        qr_img = generate_qr(qr_payload)
+
         issued_path = os.path.join(issued_dir, f"ISSUED_{filename}")
 
         if filename.lower().endswith(".pdf"):
@@ -118,11 +124,10 @@ def issue_document():
         else:
             stamp_qr_on_image(original_path, qr_img, issued_path)
 
-        # ---- Final hashes (AFTER stamping) ----
+        # Hash & pHash AFTER stamping
         final_sha = compute_sha256(issued_path)
         final_phash = compute_phash(issued_path)
 
-        # ---- Store in DB ----
         db.session.add(Document(
             doc_id=doc_id,
             filename=filename,
@@ -134,6 +139,7 @@ def issue_document():
             student_name=student_name
         ))
 
+        # Public ledger (cross-organization trust)
         db.session.add(PublicLedger(
             doc_id=doc_id,
             doc_hash=final_sha,
@@ -155,9 +161,9 @@ def issue_document():
     return render_template("issue.html")
 
 
-# -------------------------------------------------
+# =====================================================
 # VERIFY DOCUMENT (ADMIN / VERIFIER)
-# -------------------------------------------------
+# =====================================================
 @auth_bp.route("/verify", methods=["GET", "POST"])
 @login_required
 def verify_document():
@@ -173,7 +179,7 @@ def verify_document():
         file = request.files.get("document")
 
         if not file:
-            flash("Document required", "danger")
+            flash("Document is required", "danger")
             return redirect(url_for("auth.verify_document"))
 
         verify_dir = os.path.join(current_app.root_path, "storage", "verify")
@@ -182,44 +188,57 @@ def verify_document():
         path = os.path.join(verify_dir, secure_filename(file.filename))
         file.save(path)
 
-        verified = False
-
-        # -------- 1️⃣ QR BASED VERIFICATION (PRIMARY) --------
+        # =================================================
+        # 1️⃣ QR-BASED VERIFICATION (PRIMARY)
+        # =================================================
         qr_data = decode_qr(path)
 
-        if qr_data and qr_data.startswith("DOC:"):
-            doc_id = qr_data.replace("DOC:", "").strip()
+        if qr_data and "DOC:" in qr_data:
+            try:
+                parts = dict(p.split(":", 1) for p in qr_data.split("|"))
+                doc_id = parts.get("DOC")
 
-            uploaded_hash = compute_sha256(path)
-            ledger_entry = PublicLedger.query.filter_by(doc_id=doc_id).first()
+                ledger = PublicLedger.query.filter_by(doc_id=doc_id).first()
 
-            if ledger_entry:
-                if uploaded_hash == ledger_entry.doc_hash:
+                if ledger:
                     result = "VALID"
-                    message = "Document verified successfully (hash matched)"
+                    message = "Document verified using QR and public ledger"
                 else:
                     result = "FAKE"
-                    message = "Document tampered (hash mismatch)"
-                verified = True
-            else:
+                    message = "QR detected but document not registered"
+
+                db.session.add(AuditLog(
+                    user_id=current_user.id,
+                    action="VERIFY_DOCUMENT",
+                    result=result
+                ))
+                db.session.commit()
+
+                return render_template("verify.html", result=result, message=message)
+
+            except Exception:
                 result = "FAKE"
-                message = "QR found but document not registered"
-                verified = True
+                message = "Invalid QR data"
+                return render_template("verify.html", result=result, message=message)
 
-        # -------- 2️⃣ VISUAL MATCH (SCAN / PHOTO) --------
-        if not verified:
-            uploaded_phash = compute_phash(path)
-            for doc in Document.query.all():
-                if hamming_distance(uploaded_phash, doc.phash) <= PHASH_THRESHOLD:
-                    result = "UNKNOWN"
-                    message = "Visually similar document detected (scan/photo)"
-                    verified = True
-                    break
+        # =================================================
+        # 2️⃣ PHYSICAL DOCUMENT VERIFICATION (SCAN / PHOTO)
+        # =================================================
+        uploaded_phash = compute_phash(path)
+        documents = Document.query.all()
 
-        # -------- 3️⃣ FINAL FALLBACK --------
-        if not verified:
+        for doc in documents:
+            if hamming_distance(uploaded_phash, doc.phash) <= PHASH_THRESHOLD:
+                result = "VALID"
+                message = "Physical certificate verified using issuer record"
+                break
+
+        # =================================================
+        # 3️⃣ FINAL FALLBACK
+        # =================================================
+        if not result:
             result = "FAKE"
-            message = "Unrecognized or forged document"
+            message = "Document does not match any issued certificate"
 
         db.session.add(AuditLog(
             user_id=current_user.id,
@@ -231,9 +250,9 @@ def verify_document():
     return render_template("verify.html", result=result, message=message)
 
 
-# -------------------------------------------------
+# =====================================================
 # ADMIN PANEL
-# -------------------------------------------------
+# =====================================================
 @auth_bp.route("/admin")
 @login_required
 def admin_panel():
@@ -251,9 +270,9 @@ def admin_panel():
     )
 
 
-# -------------------------------------------------
-# DOWNLOAD
-# -------------------------------------------------
+# =====================================================
+# DOWNLOAD ISSUED DOCUMENT
+# =====================================================
 @auth_bp.route("/download/<doc_id>")
 @login_required
 def download_document(doc_id):
