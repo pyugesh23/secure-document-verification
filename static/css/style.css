@@ -1,80 +1,151 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ===== BODY ===== */
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
-    margin: 0;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #fff;
+    min-height: 100vh;
 }
 
-/* HEADER */
-header {
-    background: #1e293b;
-    color: white;
-    padding: 15px;
+/* ===== NAVBAR ===== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
 }
 
-header h1 {
-    margin: 0;
+.logo {
+    font-size: 22px;
+    font-weight: 600;
 }
 
-nav {
-    margin-top: 10px;
-}
-
-nav a {
-    color: white;
-    margin-right: 15px;
+.nav-links a {
+    margin-left: 20px;
+    color: #fff;
     text-decoration: none;
+    position: relative;
+    transition: 0.3s;
 }
 
-/* MAIN */
-main {
-    padding: 30px;
+.nav-links a::after {
+    content: '';
+    width: 0;
+    height: 2px;
+    background: #00eaff;
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    transition: 0.3s;
 }
 
-/* CARD */
-.card {
-    background: white;
-    padding: 25px;
-    max-width: 500px;
-    margin: auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-/* INPUTS */
-input, button {
+.nav-links a:hover::after {
     width: 100%;
-    padding: 12px;
-    margin-top: 10px;
 }
 
+.logout {
+    color: #ff7675;
+}
+
+/* ===== CONTAINER ===== */
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* ===== ANIMATIONS ===== */
+.fade-in {
+    animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== BUTTONS ===== */
 button {
-    background: #2563eb;
-    color: white;
+    padding: 10px 25px;
     border: none;
+    border-radius: 25px;
+    background: #00eaff;
+    color: #000;
+    font-weight: 600;
     cursor: pointer;
+    transition: 0.3s;
 }
 
 button:hover {
-    background: #1d4ed8;
+    transform: scale(1.05);
+    background: #00bcd4;
 }
 
-/* ALERTS */
-.alert {
+/* ===== INPUTS ===== */
+input, select {
+    width: 100%;
     padding: 10px;
-    margin-bottom: 10px;
+    margin: 10px 0 20px;
+    border-radius: 8px;
+    border: none;
 }
 
-.alert.success { background: #dcfce7; }
-.alert.danger { background: #fee2e2; }
+/* ===== FLASH ===== */
+.flash-container {
+    max-width: 900px;
+    margin: 20px auto;
+}
 
-/* RESULT */
-.result.valid { color: green; }
-.result.fake { color: red; }
-.result.unknown { color: orange; }
+.flash {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    animation: fadeIn 0.5s ease-in;
+}
 
-/* FOOTER */
+.flash.success {
+    background: #2ecc71;
+}
+
+.flash.danger {
+    background: #e74c3c;
+}
+
+/* ===== STATUS COLORS ===== */
+.status-valid {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.status-fake {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.status-unknown {
+    color: #f1c40f;
+    font-weight: bold;
+}
+
+/* ===== FOOTER ===== */
 footer {
     text-align: center;
-    padding: 10px;
-    background: #e5e7eb;
+    padding: 20px;
+    opacity: 0.7;
 }
